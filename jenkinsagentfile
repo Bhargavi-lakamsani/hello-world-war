@@ -1,8 +1,6 @@
 pipeline {
     agent none
-tools {
-        git 'Git'
-    }
+    
     environment {
         ENV_VAR_STRING = "${params.STRING_ENV}"
         ENV_VAR_CHOICE = "${params.CHOICE_ENV}"
@@ -12,44 +10,49 @@ tools {
         // Retrieve username/password credential
         USERNAME_PASSWORD_CRED = credentials('MY_USER_NAME')
     }
+    
     parameters {
         string(name: 'STRING_ENV', defaultValue: 'Default String Value', description: 'Enter a string value')
         choice(name: 'CHOICE_ENV', choices: ['DEV', 'PROD', 'TEST'], description: 'Choose an option')
         booleanParam(name: 'BOOLEAN_ENV', defaultValue: true, description: 'Select true or false')
     }
+    
     stages {
+        stage('Setup') {
+            agent any
+            tools {
+                git 'Git'
+            }
+            steps {
+                echo 'Setup stage'
+            }
+        }
+        
         stage('Stage 1') {
             agent { label 'agent1' }
             steps {
-                script {
-                    echo "Performing Stage 1"
-                    echo "String Environment Variable: ${ENV_VAR_STRING}"
-                    echo "Choice Environment Variable: ${ENV_VAR_CHOICE}"
-                    echo "Boolean Environment Variable: ${ENV_VAR_BOOLEAN}"
-                }
+                echo "Performing Stage 1"
+                echo "String Environment Variable: ${ENV_VAR_STRING}"
+                echo "Choice Environment Variable: ${ENV_VAR_CHOICE}"
+                echo "Boolean Environment Variable: ${ENV_VAR_BOOLEAN}"
             }
         }
+        
         stage('Stage 2') {
             agent { label 'agent1' }
             steps {
-                script {
-                    echo "Performing Stage 2 in agent1"
-                     // Accessing build number
-                    def buildNumber = env.BUILD_NUMBER
-                    echo "Build Number: ${buildNumber}"
-                    
-                    // Accessing job name
-                    def jobName = env.JOB_NAME
-                    echo "Job Name: ${jobName}"
-                    
-                    // Accessing Jenkins URL
-                    def jenkinsUrl = env.JENKINS_URL
-                    echo "Jenkins URL: ${jenkinsUrl}"
-                    
-                    // Accessing build URL
-                    def buildUrl = env.BUILD_URL
-                    echo "Build URL: ${buildUrl}"
-                }
+                echo "Performing Stage 2 in agent1"
+                
+                // Accessing build number, job name, Jenkins URL, and build URL
+                def buildNumber = env.BUILD_NUMBER
+                def jobName = env.JOB_NAME
+                def jenkinsUrl = env.JENKINS_URL
+                def buildUrl = env.BUILD_URL
+                
+                echo "Build Number: ${buildNumber}"
+                echo "Job Name: ${jobName}"
+                echo "Jenkins URL: ${jenkinsUrl}"
+                echo "Build URL: ${buildUrl}"
             }
             post {
                 success {
@@ -60,27 +63,28 @@ tools {
                 }
             }
         }
+        
         stage('Stage 3') {
-    agent { label 'agent2' }
-    when {
-        allOf {
-            expression { params.CHOICE_ENV == 'DEV' }
-            branch 'master'
-            expression { currentBuild.previousBuild != null && currentBuild.previousBuild.result == 'SUCCESS' }
+            agent { label 'agent2' }
+            when {
+                allOf {
+                    expression { params.CHOICE_ENV == 'DEV' }
+                    branch 'master'
+                    expression { currentBuild.previousBuild != null && currentBuild.previousBuild.result == 'SUCCESS' }
+                }
+            }
+            steps {
+                script {
+                    println "Performing Stage 3 in agent2"
+                }
+            }
+            post {
+                success {
+                    echo 'Stage 3 completed successfully'
+                }
+            }
         }
-    }
-    steps {
-        script {
-            println "Performing Stage 3 in agent2"
-        }
-    }
-    post {
-        success {
-            echo 'Stage 3 completed successfully'
-        }
-    }
-}
-
+        
         stage('Stage 4') {
             agent { label 'agent2' }
             when {
@@ -101,10 +105,12 @@ tools {
             }
         }
     }
+    
     triggers {
         cron('H/5 * * * *')
         pollSCM('* * * * *')
     }
+    
     post {
         always {
             echo 'Pipeline completed'
@@ -121,4 +127,3 @@ tools {
         }
     }
 }
-
