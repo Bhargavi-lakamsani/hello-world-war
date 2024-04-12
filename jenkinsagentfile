@@ -1,5 +1,8 @@
 pipeline {
     agent none
+tools {
+        git 'Git'
+    }
     environment {
         ENV_VAR_STRING = "${params.STRING_ENV}"
         ENV_VAR_CHOICE = "${params.CHOICE_ENV}"
@@ -19,10 +22,10 @@ pipeline {
             agent { label 'agent1' }
             steps {
                 script {
-                    println "Performing Stage 1"
-                    println "String Environment Variable: ${ENV_VAR_STRING}"
-                    println "Choice Environment Variable: ${ENV_VAR_CHOICE}"
-                    println "Boolean Environment Variable: ${ENV_VAR_BOOLEAN}"
+                    echo "Performing Stage 1"
+                    echo "String Environment Variable: ${ENV_VAR_STRING}"
+                    echo "Choice Environment Variable: ${ENV_VAR_CHOICE}"
+                    echo "Boolean Environment Variable: ${ENV_VAR_BOOLEAN}"
                 }
             }
         }
@@ -30,12 +33,22 @@ pipeline {
             agent { label 'agent1' }
             steps {
                 script {
-                    println "Performing Stage 2 in agent1"
-                    // Using global variables
-                    global_var1 = 'Global Variable 1'
-                    global_var2 = 'Global Variable 2'
-                    println "Global Variable 1: ${global_var1}"
-                    println "Global Variable 2: ${global_var2}"
+                    echo "Performing Stage 2 in agent1"
+                     // Accessing build number
+                    def buildNumber = env.BUILD_NUMBER
+                    echo "Build Number: ${buildNumber}"
+                    
+                    // Accessing job name
+                    def jobName = env.JOB_NAME
+                    echo "Job Name: ${jobName}"
+                    
+                    // Accessing Jenkins URL
+                    def jenkinsUrl = env.JENKINS_URL
+                    echo "Jenkins URL: ${jenkinsUrl}"
+                    
+                    // Accessing build URL
+                    def buildUrl = env.BUILD_URL
+                    echo "Build URL: ${buildUrl}"
                 }
             }
             post {
@@ -48,24 +61,26 @@ pipeline {
             }
         }
         stage('Stage 3') {
-            agent { label 'agent2' }
-            when {
-                allOf {
-                    expression { params.CHOICE_ENV in ['DEV', 'master'] }
-                    expression { success_of_stage_2 == true }
-                }
-            }
-            steps {
-                script {
-                    println "Performing Stage 3 in agent2"
-                }
-            }
-            post {
-                success {
-                    echo 'Stage 3 completed successfully'
-                }
-            }
+    agent { label 'agent2' }
+    when {
+        allOf {
+            expression { params.CHOICE_ENV == 'DEV' }
+            branch 'master'
+            expression { currentBuild.previousBuild != null && currentBuild.previousBuild.result == 'SUCCESS' }
         }
+    }
+    steps {
+        script {
+            println "Performing Stage 3 in agent2"
+        }
+    }
+    post {
+        success {
+            echo 'Stage 3 completed successfully'
+        }
+    }
+}
+
         stage('Stage 4') {
             agent { label 'agent2' }
             when {
