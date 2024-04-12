@@ -1,1 +1,109 @@
+pipeline {
+    agent none
+    environment {
+        ENV_VAR_STRING = "${params.STRING_ENV}"
+        ENV_VAR_CHOICE = "${params.CHOICE_ENV}"
+        ENV_VAR_BOOLEAN = "${params.BOOLEAN_ENV}"
+        // Retrieve secret text credential
+        SECRET_TEXT_CRED = credentials('MY_TOKEN')
+        // Retrieve username/password credential
+        USERNAME_PASSWORD_CRED = credentials('MY_USER_NAME')
+    }
+    parameters {
+        string(name: 'STRING_ENV', defaultValue: 'Default String Value', description: 'Enter a string value')
+        choice(name: 'CHOICE_ENV', choices: ['DEV', 'PROD', 'TEST'], description: 'Choose an option')
+        booleanParam(name: 'BOOLEAN_ENV', defaultValue: true, description: 'Select true or false')
+    }
+    stages {
+        stage('Stage 1') {
+            agent { label 'agent1' }
+            steps {
+                script {
+                    println "Performing Stage 1"
+                    println "String Environment Variable: ${ENV_VAR_STRING}"
+                    println "Choice Environment Variable: ${ENV_VAR_CHOICE}"
+                    println "Boolean Environment Variable: ${ENV_VAR_BOOLEAN}"
+                }
+            }
+        }
+        stage('Stage 2') {
+            agent { label 'agent1' }
+            steps {
+                script {
+                    println "Performing Stage 2 in agent1"
+                    // Using global variables
+                    global_var1 = 'Global Variable 1'
+                    global_var2 = 'Global Variable 2'
+                    println "Global Variable 1: ${global_var1}"
+                    println "Global Variable 2: ${global_var2}"
+                }
+            }
+            post {
+                success {
+                    echo 'Stage 2 completed successfully'
+                    script {
+                        success_of_stage_2 = true
+                    }
+                }
+            }
+        }
+        stage('Stage 3') {
+            agent { label 'agent2' }
+            when {
+                allOf {
+                    expression { params.CHOICE_ENV in ['DEV', 'master'] }
+                    expression { success_of_stage_2 == true }
+                }
+            }
+            steps {
+                script {
+                    println "Performing Stage 3 in agent2"
+                }
+            }
+            post {
+                success {
+                    echo 'Stage 3 completed successfully'
+                }
+            }
+        }
+        stage('Stage 4') {
+            agent { label 'agent2' }
+            when {
+                allOf {
+                    expression { params.BOOLEAN_ENV }
+                    expression { previousStage().result == 'SUCCESS' }
+                }
+            }
+            steps {
+                script {
+                    println "Performing Stage 4 in Agent 2"
+                }
+            }
+            post {
+                success {
+                    echo 'Stage 4 completed successfully'
+                }
+            }
+        }
+    }
+    triggers {
+        cron('H/5 * * * *')
+        pollSCM('* * * * *')
+    }
+    post {
+        always {
+            echo 'Pipeline completed'
+        }
+        success {
+            mail to: 'navatabhargavi@gmail.com',
+                subject: "Pipeline ${env.JOB_NAME} - Build #${env.BUILD_NUMBER} Successful",
+                body: "Congratulations! Your Jenkins pipeline build was successful."
+        }
+        failure {
+            mail to: 'navatabhargavi@gmail.com',
+                subject: "Pipeline ${env.JOB_NAME} - Build #${env.BUILD_NUMBER} Failed",
+                body: "Sorry, your Jenkins pipeline build failed. Please check the logs for details."
+        }
+    }
+}
 
