@@ -43,16 +43,18 @@ pipeline {
             steps {
                 echo "Performing Stage 2 in agent1"
                 
-                // Accessing build number, job name, Jenkins URL, and build URL
-                def buildNumber = env.BUILD_NUMBER
-                def jobName = env.JOB_NAME
-                def jenkinsUrl = env.JENKINS_URL
-                def buildUrl = env.BUILD_URL
-                
-                echo "Build Number: ${buildNumber}"
-                echo "Job Name: ${jobName}"
-                echo "Jenkins URL: ${jenkinsUrl}"
-                echo "Build URL: ${buildUrl}"
+                script {
+                    // Accessing build number, job name, Jenkins URL, and build URL
+                    def buildNumber = env.BUILD_NUMBER
+                    def jobName = env.JOB_NAME
+                    def jenkinsUrl = env.JENKINS_URL
+                    def buildUrl = env.BUILD_URL
+                    
+                    echo "Build Number: ${buildNumber}"
+                    echo "Job Name: ${jobName}"
+                    echo "Jenkins URL: ${jenkinsUrl}"
+                    echo "Build URL: ${buildUrl}"
+                }
             }
             post {
                 success {
