@@ -1,131 +1,92 @@
 pipeline {
     agent none
-    
     environment {
-        ENV_VAR_STRING = "${params.STRING_ENV}"
-        ENV_VAR_CHOICE = "${params.CHOICE_ENV}"
-        ENV_VAR_BOOLEAN = "${params.BOOLEAN_ENV}"
-        // Retrieve secret text credential
-        SECRET_TEXT_CRED = credentials('MY_TOKEN')
-        // Retrieve username/password credential
-        USERNAME_PASSWORD_CRED = credentials('MY_USER_NAME')
-    }
-    
-    parameters {
-        string(name: 'STRING_ENV', defaultValue: 'Default String Value', description: 'Enter a string value')
-        choice(name: 'CHOICE_ENV', choices: ['DEV', 'PROD', 'TEST'], description: 'Choose an option')
-        booleanParam(name: 'BOOLEAN_ENV', defaultValue: true, description: 'Select true or false')
+        STRING_VAR = "Bhargavi"
+        CHOICE_VAR = "DEV"
+        BOOLEAN_VAR = true
     }
     
     stages {
-        stage('Setup') {
-            agent any
-            tools {
-                git 'Default Git'
-            }
-            steps {
-                echo 'Setup stage'
-            }
-        }
-        
         stage('Stage 1') {
             agent { label 'agent1' }
             steps {
-                echo "Performing Stage 1"
-                echo "String Environment Variable: ${ENV_VAR_STRING}"
-                echo "Choice Environment Variable: ${ENV_VAR_CHOICE}"
-                echo "Boolean Environment Variable: ${ENV_VAR_BOOLEAN}"
+                echo "Running Stage 1"
+                script {
+                    // Using a global variable
+                 buildNumber = "env.BUILD_NUMBER"
+                 echo "Build Number: ${buildNumber}"
+                }
             }
         }
-        
         stage('Stage 2') {
             agent { label 'agent1' }
             steps {
-                echo "Performing Stage 2 in agent1"
-                
+                echo "Running Stage 2"
                 script {
-                    // Accessing build number, job name, Jenkins URL, and build URL
-                    def buildNumber = env.BUILD_NUMBER
-                    def jobName = env.JOB_NAME
-                    def jenkinsUrl = env.JENKINS_URL
-                    def buildUrl = env.BUILD_URL
-                    
-                    echo "Build Number: ${buildNumber}"
-                    echo "Job Name: ${jobName}"
-                    echo "Jenkins URL: ${jenkinsUrl}"
-                    echo "Build URL: ${buildUrl}"
-                }
-            }
-            post {
-                success {
-                    echo 'Stage 2 completed successfully'
-                    script {
-                        success_of_stage_2 = true
-                    }
+                    // Using a global variable
+                     jobName = "env.JOB_NAME"
+                     echo "Job Name: ${jobName}"
                 }
             }
         }
-        
         stage('Stage 3') {
             agent { label 'agent2' }
             when {
                 allOf {
-                    expression { params.CHOICE_ENV == 'DEV' }
                     branch 'master'
-                    expression { currentBuild.previousBuild != null && currentBuild.previousBuild.result == 'SUCCESS' }
+                    branch 'dev'
+                    expression {
+                        currentBuild.result == 'SUCCESS'
+                    }
                 }
             }
             steps {
+                echo "Running Stage 3"
                 script {
-                    println "Performing Stage 3 in agent2"
-                }
-            }
-            post {
-                success {
-                    echo 'Stage 3 completed successfully'
+                    // Using a global variable
+                   jenkinsUrl = "env.JENKINS_URL"
+                   echo "Jenkins URL: ${jenkinsUrl}"
                 }
             }
         }
-        
         stage('Stage 4') {
             agent { label 'agent2' }
             when {
                 allOf {
-                    expression { params.BOOLEAN_ENV }
-                    expression { previousStage().result == 'SUCCESS' }
+                    expression {
+                        previousBuild?.result == 'SUCCESS'
+                    }
                 }
             }
             steps {
+                echo "Running Stage 4"
                 script {
-                    println "Performing Stage 4 in Agent 2"
-                }
-            }
-            post {
-                success {
-                    echo 'Stage 4 completed successfully'
+                    // Using a global variable
+                    buildUrl = "env.BUILD_URL"
+                    echo "Build URL: ${buildUrl}"
                 }
             }
         }
     }
     
     triggers {
-        cron('H/5 * * * *')
-        pollSCM('* * * * *')
+        cron('H * * * *') // Periodic trigger every hour
+        pollSCM('*/5 * * * *') // Poll SCM every 5 minutes
     }
     
     post {
         always {
-            echo 'Pipeline completed'
+            echo "navatabhargavi@gmail.com"
+            emailext body: "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} has finished. Status: ${currentBuild.currentResult}",
+                     subject: "Jenkins Build Notification",
+                     to: "your@email.com"
         }
-        success {
-            mail to: 'navatabhargavi@gmail.com',
-                subject: "Pipeline ${env.JOB_NAME} - Build #${env.BUILD_NUMBER} Successful",
-                body: "Congratulations! Your Jenkins pipeline build was successful."
-        }
-        failure {
-            mail to: 'navatabhargavi@gmail.com',
-                subject: "Pipeline ${env.JOB_NAME} - Build #${env.BUILD_NUMBER} Failed",
-                body: "Sorry, your Jenkins pipeline build failed. Please check the logs for details."
-        }
+    }
+    
+    // Credentials
+    environment {
+        SECRET_TEXT = credentials('MY_TOKEN')
+        USERNAME = credentials('MY_USER_NAME')
+        PASSWORD = credentials('MY_USER_NAME')
     }
 }
