@@ -21,7 +21,7 @@ pipeline {
         stage('Setup') {
             agent any
             tools {
-                git 'Git'
+                git 'Default Git'
             }
             steps {
                 echo 'Setup stage'
