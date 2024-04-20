@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'master', credentialsId: 'github', url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Push') {
+            steps {
+                echo 'This is Push Stage'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'rsync  /var/lib/jenkins/workspace/tomcat/target/*.war ubuntu@65.2.33.55:/opt/tomcat/webapps/'
+      
+            }
+        }
+
+    }
+}
