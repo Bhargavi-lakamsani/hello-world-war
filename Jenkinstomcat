@@ -1,30 +1,34 @@
 pipeline {
-    agent any
+    
+    agent { label 'docker' }
 
     stages {
-        stage('Checkout') {
+        stage('Git Checkout') {
+            
             steps {
-                git branch: 'master', credentialsId: 'github', url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git'
+                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git']])
             }
         }
-
-        stage('Build') {
+        stage('Maven Build and Copy War Files') {
+            
             steps {
+                
                 sh 'mvn clean package'
             }
         }
-
         stage('Push') {
+            
             steps {
                 echo 'This is Push Stage'
             }
         }
-
+       
         stage('Deploy') {
+           
             steps {
-                sh 'rsync -avzP  /var/lib/jenkins/workspace/tomcat/target/*.war ubuntu@13.235.50.237:/opt/tomcat/webapps/'
+                sh 'docker build -t tomcat:8.0-alpine .'
+                sh 'docker run -d -p 8080:8080 tomcat:8.0-alpine'
             }
         }
-
     }
 }
