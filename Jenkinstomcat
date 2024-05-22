@@ -7,7 +7,10 @@ pipeline {
             
             steps {
                 checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git']])
-            }
+                sh 'mvn clean package'
+              
+             }
+
         }
         stage('build stage') {
             
@@ -28,7 +31,7 @@ pipeline {
         stage('Deploy') {
            
             steps {
-                sh 'mvn clean package'
+                
                 sh 'docker run -d -p 8080:8080 tomcat:8.0-alpinenew'
             }
         }
