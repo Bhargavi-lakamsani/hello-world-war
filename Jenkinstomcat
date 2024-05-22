@@ -13,14 +13,14 @@ pipeline {
             
             steps {
 
-                sh 'docker build -t tomcat:8.0-alpine .'
+                sh 'docker build -t tomcat:8.0-alpinenew .'
                 
             }
         }
         stage('Push') {
             
             steps {
-               sh 'docker tag tomcat:8.0-alpine 590183706325.dkr.ecr.ap-south-1.amazonaws.com/docker:pipeline'
+               sh 'docker tag tomcat:8.0-alpinenew 590183706325.dkr.ecr.ap-south-1.amazonaws.com/docker:pipeline'
                sh 'docker push 590183706325.dkr.ecr.ap-south-1.amazonaws.com/docker:pipeline'
             }
         }
