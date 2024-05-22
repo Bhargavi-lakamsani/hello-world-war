@@ -9,24 +9,26 @@ pipeline {
                 checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git']])
             }
         }
-        stage('Maven Build and Copy War Files') {
+        stage('build stage') {
             
             steps {
+
+                sh 'docker build -t tomcat:8.0-alpine .'
                 
-                sh 'mvn clean package'
             }
         }
         stage('Push') {
             
             steps {
-                echo 'This is Push Stage'
+               sh 'docker tag tomcat:8.0-alpine 590183706325.dkr.ecr.ap-south-1.amazonaws.com/docker:pipeline'
+               sh 'docker push 590183706325.dkr.ecr.ap-south-1.amazonaws.com/docker:pipeline'
             }
         }
        
         stage('Deploy') {
            
             steps {
-                sh 'docker build -t tomcat:8.0-alpine .'
+                sh 'mvn clean package'
                 sh 'docker run -d -p 8080:8080 tomcat:8.0-alpine'
             }
         }
