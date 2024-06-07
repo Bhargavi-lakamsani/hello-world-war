@@ -1,7 +1,7 @@
 FROM alpine:latest as checkout
 RUN apk add --no-cache git
 WORKDIR /app
-RUN git clone https://github.com/Bhargavi-lakamsani/hello-world-war.git.
+RUN git clone https://github.com/Bhargavi-lakamsani/hello-world-war.git
 
 FROM maven:3.8.4-openjdk-11 as build
 WORKDIR /mvn
