@@ -1,12 +1,17 @@
-FROM ubuntu:latest
+FROM alpine:latest as checkout
+RUN apk add --no-cache git
+WORKDIR /app
+RUN git clone https://github.com/Bhargavi-lakamsani/samples.jarfiles.git.
 
-RUN apt-get update && apt-get install -y git && apt-get install -y openjdk-11-jdk && apt-get install -y maven
+FROM maven:3.8.4-openjdk-11 as build
+WORKDIR /mvn
+COPY --from=checkout /app .
+RUN mvn clean install
 
-WORKDIR /git-clone
+FROM tomcat:8.0-alpine
+COPY --from=build /mvn/target/*.war /usr/local/tomcat/webapps/
 
-RUN git clone https://github.com/Bhargavi-lakamsani/hello-world-war.git
+EXPOSE 8080
+CMD ["catalina.sh", "run"]
 
-WORKDIR /git-clone/hello-world-war
-
-RUN mvn clean package
 
