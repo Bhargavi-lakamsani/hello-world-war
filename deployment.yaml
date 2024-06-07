@@ -6,7 +6,7 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: my-tomcatn
+      app: my-tomcat
   template:
     metadata:
       labels:
