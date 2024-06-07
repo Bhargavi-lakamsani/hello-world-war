@@ -32,14 +32,15 @@ pipeline {
         stage('Deploy') {
             steps {
                 sshagent(['k8s']) {
-                    // Transfer YAML files to the remote machine
-                    sh 'scp -o StrictHostKeyChecking=no deployment.yaml service.yaml ubuntu@3.108.191.12:/home/ubuntu'
+                    script {
+                        // Transfer YAML files to the remote machine
+                        sh 'scp -o StrictHostKeyChecking=no deployment.yaml service.yaml ubuntu@3.108.191.12:/home/ubuntu'
                         
                         try {
                             // Apply Kubernetes configurations
                             sh 'ssh ubuntu@3.108.191.12 "kubectl apply -f /home/ubuntu/deployment.yaml"'
                             sh 'ssh ubuntu@3.108.191.12 "kubectl apply -f /home/ubuntu/service.yaml"'
-                        } catch (error) {
+                        } catch (Exception e) {
                             // Fallback to create if apply fails
                             sh 'ssh ubuntu@3.108.191.12 "kubectl create -f /home/ubuntu/deployment.yaml"'
                             sh 'ssh ubuntu@3.108.191.12 "kubectl create -f /home/ubuntu/service.yaml"'
@@ -48,7 +49,7 @@ pipeline {
                 }
             }
         }
-    
+    }
 
     post {
         success {
@@ -59,5 +60,3 @@ pipeline {
         }
     }
 }
-
-
