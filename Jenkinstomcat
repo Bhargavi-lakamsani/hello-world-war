@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'tomcat'
         DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
-        DOCKER_IMAGE_NAME = "bhargavilakamsani/${DOCKER_IMAGE}:${DOCKER_IMAGE_TAG}" // Corrected syntax for variable substitution
+        DOCKER_IMAGE_NAME = "bhargavilakamsani/${DOCKER_IMAGE}:${DOCKER_IMAGE_TAG}" 
     }
 
     stages {
@@ -26,10 +26,10 @@ pipeline {
             steps {
                 
                 withCredentials([usernamePassword(credentialsId: 'bhargavi-docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh """
+                    
                     echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                    docker push ${DOCKER_IMAGE_NAME}
-                    """
+                    sh "docker tag $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG $ECR_REGISTRY_URL:$DOCKER_IMAGE_TAG"
+                    sh "docker push ${DOCKER_IMAGE_NAME}"              
                 }
             }
         }
