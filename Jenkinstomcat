@@ -1,62 +1,41 @@
 pipeline {
-    agent any
-
+     agent { label 'docker' }
+    
     environment {
-        DOCKER_IMAGE_NAME = 'bhargavilakamsani/tomcat:latest'
+        AWS_REGISTRY_CREDENTIALS = 'aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 590183706325.dkr.ecr.ap-south-1.amazonaws.com'
+        ECR_REGISTRY_URL = '590183706325.dkr.ecr.ap-south-1.amazonaws.com/docker'
+        DOCKER_IMAGE_NAME = 'tomcat'
+        DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
     }
-
+    
     stages {
         stage('Checkout') {
             steps {
-                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git']])
+               checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Bhargavi-lakamsani/war-web-project.git']])
             }
         }
-
+        
         stage('Build') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE_NAME .'
+                sh 'docker build -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG .'
             }
         }
-
+        
         stage('Push') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'bhargavi-docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    docker push $DOCKER_IMAGE_NAME
-                    '''
-                }
+                  sh "$AWS_REGISTRY_CREDENTIALS"
+               
+                 sh "docker tag $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG $ECR_REGISTRY_URL:$DOCKER_IMAGE_TAG"
+                sh "docker push $ECR_REGISTRY_URL:$DOCKER_IMAGE_TAG"
             }
         }
-
+        
         stage('Deploy') {
             steps {
-                sshagent(['k8s']) {
-                    script {
-                        // Transfer YAML files to the remote machine
-                        sh 'scp -o StrictHostKeyChecking=no deployment.yaml service.yaml ubuntu@3.108.191.12:/home/ubuntu'
-                        
-                        try {
-                            // Apply Kubernetes configurations
-                            sh 'ssh ubuntu@3.108.191.12 "kubectl apply -f /home/ubuntu/deployment.yaml"'
-                            sh 'ssh ubuntu@3.108.191.12 "kubectl apply -f /home/ubuntu/service.yaml"'
-                        } catch (Exception e) {
-                            // Fallback to create if apply fails
-                            sh 'ssh ubuntu@3.108.191.12 "kubectl create -f /home/ubuntu/deployment.yaml"'
-                            sh 'ssh ubuntu@3.108.191.12 "kubectl create -f /home/ubuntu/service.yaml"'
-                        }
-                    }
-                }
+                
+                sh "docker run -d -p 8080:8080 $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG"
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
         }
     }
 }
+
