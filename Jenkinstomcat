@@ -7,19 +7,21 @@ pipeline {
 
     stages {
         stage('Checkout') {
-           agent { label 'docker' }
+            agent { label 'docker' }
             steps {
                 checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git']])
             }
         }
 
         stage('Build') {
+            agent { label 'docker' }
             steps {
                 sh 'docker build -t $DOCKER_IMAGE_NAME .'
             }
         }
 
         stage('Push') {
+            agent { label 'docker' }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'bhargavi-docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
@@ -30,22 +32,25 @@ pipeline {
             }
         }
 
-        stage('copy') {
+        stage('Copy') {
+            agent { label 'docker' }
             steps {
                 sshagent(['k8s']) {
                     script {
                         // Copy Kubernetes manifests to remote server
                         sh 'scp -o StrictHostKeyChecking=no deployment.yaml service.yaml ubuntu@52.66.201.175:/home/ubuntu/jenkins'
-                      }  
                     }
                 }
-              }
-                stage('deployment') {
-                    agent { label 'kubernetes' }
-                         steps {
-                        
-                        sh 'kubectl apply -f /home/ubuntu/jenkins/deployment.yaml'
-                        sh 'kubectl apply -f /home/ubuntu/jenjins/service.yaml'
+            }
+        }
+
+        stage('Deployment') {
+            agent { label 'kubernetes' }
+            steps {
+                sshagent(['k8s']) {
+                    sh 'kubectl apply -f /home/ubuntu/jenkins/deployment.yaml'
+                    sh 'kubectl apply -f /home/ubuntu/jenkins/service.yaml'
+                }
             }
         }
     }
