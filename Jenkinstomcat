@@ -46,8 +46,8 @@ pipeline {
                         
                         // Ensure kubectl is available and apply manifests
                         sh '''
-                        ssh $REMOTE_USER@$REMOTE_HOST "export PATH=$PATH:/usr/local/bin:/usr/local/bin/kubectl; kubectl apply -f /home/$REMOTE_USER/deployment.yaml"
-                        ssh $REMOTE_USER@$REMOTE_HOST "export PATH=$PATH:/usr/local/bin:/usr/local/bin/kubectl; kubectl apply -f /home/$REMOTE_USER/service.yaml"
+                        ssh $REMOTE_USER@$REMOTE_HOST  kubectl apply -f /home/$REMOTE_USER/deployment.yaml"
+                        ssh $REMOTE_USER@$REMOTE_HOST  kubectl apply -f /home/$REMOTE_USER/service.yaml"
                         '''
                     }
                 }
