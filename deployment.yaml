@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-tomcat
+  name: my-tomcatnew
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: my-tomcat
+      app: my-tomcatnew
   template:
     metadata:
       labels:
-        app: my-tomcat
+        app: my-tomcatnew
     spec:
       containers:
-      - name: my-tomcat
-        image: bhargavilakamsani/tomcat:latest
+      - name: my-tomcatnew
+        image: bhargavilakamsani/tomcatnew:latest
         ports:
         - containerPort: 8080
