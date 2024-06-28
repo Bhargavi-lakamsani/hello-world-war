@@ -1,28 +1,20 @@
 pipeline {
-    agent { 
-        label 'docker' 
-    }
+    agent { label 'docker' }
 
     environment {
         DOCKER_IMAGE_NAME = 'bhargavilakamsani/tomcatnew:latest'
-        REMOTE_HOST = '52.66.201.175'
-        REMOTE_USER = 'ubuntu'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scmGit(
-                    branches: [[name: '*/master']], 
-                    extensions: [], 
-                    userRemoteConfigs: [[url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git']]
-                )
+                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git']])
             }
         }
 
         stage('Build') {
             steps {
-                sh "docker build -t $DOCKER_IMAGE_NAME ."
+                sh 'docker build -t $DOCKER_IMAGE_NAME .'
             }
         }
 
@@ -42,13 +34,11 @@ pipeline {
                 sshagent(['k8s']) {
                     script {
                         // Copy Kubernetes manifests to remote server
-                        sh "scp -o StrictHostKeyChecking=no deployment.yaml service.yaml $REMOTE_USER@$REMOTE_HOST:/home/$REMOTE_USER/"
+                        sh 'scp -o StrictHostKeyChecking=no deployment.yaml service.yaml ubuntu@52.66.201.175:/home/ubuntu'
                         
-                        // Ensure kubectl is available and apply manifests
-                        sh '''
-                        ssh $REMOTE_USER@$REMOTE_HOST  kubectl apply -f /home/$REMOTE_USER/deployment.yaml"
-                        ssh $REMOTE_USER@$REMOTE_HOST  kubectl apply -f /home/$REMOTE_USER/service.yaml"
-                        '''
+                        // Apply Kubernetes manifests using kubectl
+                        sh 'ssh ubuntu@52.66.201.175 kubectl apply -f /home/ubuntu/deployment.yaml'
+                        sh 'ssh ubuntu@52.66.201.175 kubectl apply -f /home/ubuntu/service.yaml'
                     }
                 }
             }
