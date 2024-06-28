@@ -44,8 +44,8 @@ pipeline {
                     agent { label 'kubernetes' }
                          steps {
                         
-                        sh ' kubectl apply -f /home/ubuntu/jenkins/deployment.yaml'
-                        sh ' kubectl apply -f /home/ubuntu/jenjins/service.yaml'
+                        sh 'kubectl apply -f /home/ubuntu/jenkins/deployment.yaml'
+                        sh 'kubectl apply -f /home/ubuntu/jenjins/service.yaml'
             }
         }
     }
