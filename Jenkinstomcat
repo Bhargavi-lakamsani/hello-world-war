@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'docker' }
+    agent none
 
     environment {
         DOCKER_IMAGE_NAME = 'bhargavilakamsani/tomcatnew:latest'
@@ -7,6 +7,7 @@ pipeline {
 
     stages {
         stage('Checkout') {
+           agent { label 'docker' }
             steps {
                 checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git']])
             }
@@ -29,18 +30,22 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('copy') {
             steps {
                 sshagent(['k8s']) {
                     script {
                         // Copy Kubernetes manifests to remote server
-                        sh 'scp -o StrictHostKeyChecking=no deployment.yaml service.yaml ubuntu@52.66.201.175:/home/ubuntu'
-                        
-                        // Apply Kubernetes manifests using kubectl
-                        sh 'ssh ubuntu@52.66.201.175 kubectl apply -f /home/ubuntu/deployment.yaml'
-                        sh 'ssh ubuntu@52.66.201.175 kubectl apply -f /home/ubuntu/service.yaml'
+                        sh 'scp -o StrictHostKeyChecking=no deployment.yaml service.yaml ubuntu@52.66.201.175:/home/ubuntu/jenkins'
+                      }  
                     }
                 }
+              }
+                stage('deployment') {
+                    agent { label 'kubernetes' }
+                         steps {
+                        
+                        sh ' kubectl apply -f /home/ubuntu/jenkins/deployment.yaml'
+                        sh ' kubectl apply -f /home/ubuntu/jenjins/service.yaml'
             }
         }
     }
