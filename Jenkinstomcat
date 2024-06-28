@@ -48,8 +48,8 @@ pipeline {
             agent { label 'kubernetes' }
             steps {
                 sshagent(['k8s']) {
-                    sh 'kubectl apply -f /home/ubuntu/jenkins/deployment.yaml'
-                    sh 'kubectl apply -f /home/ubuntu/jenkins/service.yaml'
+                    sh 'kubectl apply -f deployment.yaml'
+                    sh 'kubectl apply -f service.yaml'
                 }
             }
         }
