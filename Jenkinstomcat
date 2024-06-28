@@ -1,5 +1,7 @@
 pipeline {
-     agent { label 'docker' }
+    agent { 
+        label 'docker' 
+    }
 
     environment {
         DOCKER_IMAGE_NAME = 'bhargavilakamsani/tomcatnew:latest'
@@ -8,13 +10,17 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git']])
+                checkout scmGit(
+                    branches: [[name: '*/master']], 
+                    extensions: [], 
+                    userRemoteConfigs: [[url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git']]
+                )
             }
         }
 
         stage('Build') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE_NAME .'
+                sh "docker build -t $DOCKER_IMAGE_NAME ."
             }
         }
 
@@ -30,18 +36,17 @@ pipeline {
         }
 
         stage('Deploy') {
-    steps {
-        sshagent(['k8s']) {
-            script {
-                // Copy Kubernetes manifests to remote server
-                sh 'scp -o StrictHostKeyChecking=no deployment.yaml service.yaml ubuntu@52.66.201.175:/home/ubuntu'
-                
-                // Ensure kubectl is available
-                sh '''
-                ssh ubuntu@52.66.201.175 "export PATH=$PATH:/usr/local/bin/kubectl; kubectl apply -f /home/ubuntu/deployment.yaml"
-                ssh ubuntu@52.66.201.175 "export PATH=$PATH:/usr/local/bin/kubectl; kubectl apply -f /home/ubuntu/service.yaml"
-                '''
-                        }
+            steps {
+                sshagent(['k8s']) {
+                    script {
+                        // Copy Kubernetes manifests to remote server
+                        sh 'scp -o StrictHostKeyChecking=no deployment.yaml service.yaml ubuntu@52.66.201.175:/home/ubuntu'
+                        
+                        // Ensure kubectl is available and apply manifests
+                        sh '''
+                        ssh ubuntu@52.66.201.175 "export PATH=$PATH:/usr/local/bin:/usr/local/bin/kubectl; kubectl apply -f /home/ubuntu/deployment.yaml"
+                        ssh ubuntu@52.66.201.175 "export PATH=$PATH:/usr/local/bin:/usr/local/bin/kubectl; kubectl apply -f /home/ubuntu/service.yaml"
+                        '''
                     }
                 }
             }
