@@ -32,18 +32,6 @@ pipeline {
             }
         }
 
-        stage('Copy') {
-            agent { label 'docker' }
-            steps {
-                sshagent(['k8s']) {
-                    script {
-                        // Copy Kubernetes manifests to remote server
-                        sh 'scp -o StrictHostKeyChecking=no deployment.yaml service.yaml ubuntu@52.66.201.175:/home/ubuntu/jenkins'
-                    }
-                }
-            }
-        }
-
         stage('Deployment') {
             agent { label 'kubernetes' }
             steps {
