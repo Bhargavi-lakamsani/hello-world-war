@@ -5,6 +5,8 @@ pipeline {
 
     environment {
         DOCKER_IMAGE_NAME = 'bhargavilakamsani/tomcatnew:latest'
+        REMOTE_HOST = '52.66.201.175'
+        REMOTE_USER = 'ubuntu'
     }
 
     stages {
@@ -40,12 +42,12 @@ pipeline {
                 sshagent(['k8s']) {
                     script {
                         // Copy Kubernetes manifests to remote server
-                        sh 'scp -o StrictHostKeyChecking=no deployment.yaml service.yaml ubuntu@52.66.201.175:/home/ubuntu'
+                        sh "scp -o StrictHostKeyChecking=no deployment.yaml service.yaml $REMOTE_USER@$REMOTE_HOST:/home/$REMOTE_USER/"
                         
                         // Ensure kubectl is available and apply manifests
                         sh '''
-                        ssh ubuntu@52.66.201.175 "export PATH=$PATH:/usr/local/bin:/usr/local/bin/kubectl; kubectl apply -f /home/ubuntu/deployment.yaml"
-                        ssh ubuntu@52.66.201.175 "export PATH=$PATH:/usr/local/bin:/usr/local/bin/kubectl; kubectl apply -f /home/ubuntu/service.yaml"
+                        ssh $REMOTE_USER@$REMOTE_HOST "export PATH=$PATH:/usr/local/bin:/usr/local/bin/kubectl; kubectl apply -f /home/$REMOTE_USER/deployment.yaml"
+                        ssh $REMOTE_USER@$REMOTE_HOST "export PATH=$PATH:/usr/local/bin:/usr/local/bin/kubectl; kubectl apply -f /home/$REMOTE_USER/service.yaml"
                         '''
                     }
                 }
