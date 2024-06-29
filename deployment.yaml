@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: my-tomcatnew
-        image: bhargavilakamsani/tomcatnew:latest
+        image: bhargavilakamsani/tomcatnew:hello
         ports:
         - containerPort: 8080
