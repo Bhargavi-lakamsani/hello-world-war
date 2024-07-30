@@ -2,7 +2,7 @@ pipeline {
     agent none
 
     environment {
-        DOCKER_IMAGE_NAME = 'bhargavilakamsani/tomcatnew:hello'
+        DOCKER_IMAGE_NAME = 'bhargavilakamsani/tomcatnew:$BUILD_NUMBER'
     }
 
     stages {
