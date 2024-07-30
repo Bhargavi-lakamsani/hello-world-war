@@ -39,9 +39,9 @@ pipeline {
                         echo "Setting up Kubernetes context"
                         sh '''
                         export KUBECONFIG=${KUBECONFIG_FILE}
-                        kubectl config current-context
                         kubectl config get-contexts
                         kubectl config use-context bhargavi@demo-ekscluster.ap-south-1.eksctl.io
+                        kubectl get nodes
                         '''
                     }
                 }
@@ -53,7 +53,7 @@ pipeline {
                 script {
                     sh '''
                     cd helloworld
-                    helm upgrade --install helloworld ./ --set image.repository=bhargavilakamsani/tomcatnew --set image.tag=${BUILD_NUMBER}
+                    helm upgrade --install helloworld ./ --set image.repository=bhargavilakamsani/tomcatnew --set image.tag=${BUILD_NUMBER} --debug
                     '''
                 }
             }
