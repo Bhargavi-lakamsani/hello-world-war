@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE_NAME = 'bhargavilakamsani/tomcatnew:$BUILD_NUMBER'
+        DOCKER_IMAGE_NAME = 'bhargavilakamsani/tomcatnew:${BUILD_NUMBER}'
     }
 
     stages {
