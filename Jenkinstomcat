@@ -53,7 +53,7 @@ pipeline {
                 script {
                     sh '''
                     cd helloworld
-                    helm upgrade helloworld
+                    helm upgrade --install helloworld ./ --set image.repository=bhargavilakamsani/tomcatnew --set image.tag=${BUILD_NUMBER}
                     '''
                 }
             }
