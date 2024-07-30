@@ -33,7 +33,6 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    kubectl config use-context bhargavi@demo-ekscluster.ap-south-1.eksctl.io
                     cd helloworld
                     helm upgrade helloworld ./ --set image.repository=bhargavilakamsani/tomcatnew --set image.tag=${BUILD_NUMBER}
                     '''
