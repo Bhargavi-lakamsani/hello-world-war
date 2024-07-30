@@ -3,7 +3,7 @@ replicaCount: 3  # Increase for high availability
 image:
   repository: bhargavilakamsani/tomcatnew
   pullPolicy: IfNotPresent
-  tag: ""  # Or use a variable like ${BUILD_NUMBER} for dynamic tagging
+  tag: "17"  # Or use a variable like ${BUILD_NUMBER} for dynamic tagging
 
 imagePullSecrets:
   - name: my-registry-secret  # If you use a private registry
