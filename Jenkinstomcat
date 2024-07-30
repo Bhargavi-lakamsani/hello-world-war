@@ -34,12 +34,8 @@ pipeline {
 
         stage('Configure Kubernetes') {
             steps {
-                script {
-                    echo "Setting up Kubernetes context"
-                    sh '''
-                    # Replace with your actual kubeconfig path or use Jenkins credentials
-                    export KUBECONFIG=/path/to/your/kubeconfig
-                    kubectl config use-context <your-context>
+                 sh '''
+                    kubectl config use-context bhargavi@demo-ekscluster.ap-south-1.eksctl.io
                     '''
                 }
             }
