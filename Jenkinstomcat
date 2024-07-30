@@ -36,8 +36,8 @@ pipeline {
             agent { label 'kubernetes' }
             steps {
                 script {
-                        sh 'kubectl apply -f deployment.yaml --validate=false'
-                        sh 'kubectl apply -f service.yaml --validate=false'
+                        sh 'cd helloworld'
+                        sh 'helm install helloworld'
                 }
             }
         }
