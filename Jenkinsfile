@@ -28,9 +28,6 @@ pipeline {
                 // Deploy the WAR file to Tomcat's webapps directory
                 sh 'sudo cp /var/lib/jenkins/workspace/web-application/target/hello-world-war-1.0.0.war /opt/tomcat/webapps/'
 
-                // Restart Tomcat to deploy the new application
-                sh '/opt/tomcat/bin/shutdown.sh'
-                sh '/opt/tomcat/bin/startup.sh'
             }
         }
     }
