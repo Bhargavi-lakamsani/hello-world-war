@@ -26,7 +26,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 // Deploy the WAR file to Tomcat's webapps directory
-                sh 'sudo cp /var/lib/jenkins/workspace/web-application/target/hello-world-war-1.0.0.war /opt/tomcat/webapps/'
+                sh 'sudo cp /var/lib/jenkins/workspace/web-application/target/*.war /opt/tomcat/webapps/'
 
             }
         }
@@ -41,4 +41,5 @@ pipeline {
             // You can add actions to be performed on failure, such as sending alerts or notifications
         }
     }
+}
 }
