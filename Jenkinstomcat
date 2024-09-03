@@ -1,61 +1,32 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE_NAME = "bhargavilakamsani/tomcatnew:${BUILD_NUMBER}"
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git']])
+                git branch: 'master', credentialsId: 'github', url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git'
             }
         }
 
         stage('Build') {
             steps {
-                script {
-                    echo "Building Docker image with tag: ${DOCKER_IMAGE_NAME}"
-                }
-                sh 'docker build -t ${DOCKER_IMAGE_NAME} .'
+                sh 'mvn clean package'
             }
         }
 
-        stage('Push') {
+        stage('Test') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'bhargavi-docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    docker push ${DOCKER_IMAGE_NAME}
-                    '''
-                }
+                sh 'mvn test'
             }
         }
 
-        stage('Configure Kubernetes') {
+        stage('Deploy') {
             steps {
-                withCredentials([file(credentialsId: 'kubeconfig-file', variable: 'KUBECONFIG_FILE')]) {
-                    script {
-                        echo "Setting up Kubernetes context"
-                        sh '''
-                        export KUBECONFIG=${KUBECONFIG_FILE}
-                        kubectl config get-contexts
-                        kubectl config use-context bhargavi@demo-ekscluster.ap-south-1.eksctl.io
-                        kubectl get nodes
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Deployment') {
-            steps {
-                script {
-                    sh '''
-                    cd helloworld
-                    helm upgrade --install helloworld ./ --set image.repository=bhargavilakamsani/tomcatnew --set image.tag=${BUILD_NUMBER} --debug
-                    '''
-                }
+                 sh '''
+                DEPLOY_DIR="/var/lib/tomcat/webapps/"
+                cp target/*.war $DEPLOY_DIR
+                sudo systemctl restart tomcat
+                '''
             }
         }
     }
