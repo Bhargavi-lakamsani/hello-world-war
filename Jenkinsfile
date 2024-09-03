@@ -22,10 +22,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                 sh '''
-                DEPLOY_DIR="/var/lib/tomcat/webapps/"
-                cp target/*.war $DEPLOY_DIR
-                sudo systemctl restart tomcat
+                  sh 'cp target/hello-world-war-1.0.0.war /opt/tomcat/webapps/'
                 '''
             }
         }
