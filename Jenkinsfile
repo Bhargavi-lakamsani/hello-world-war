@@ -30,5 +30,15 @@ pipeline {
 
             }
         }
+        
+        post {
+        success {
+            echo 'Pipeline completed successfully.'
+            // You can also add additional actions here, like sending notifications
+        }
+        failure {
+            echo 'Pipeline failed.'
+            // You can add actions to be performed on failure, such as sending alerts or notifications
+        }
     }
 }
